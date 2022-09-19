@@ -2,7 +2,7 @@
 title: "ggplot2 Assignment"
 author: "Adam Kiehl"
 date: "2022-09-14"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE, message=FALSE}
