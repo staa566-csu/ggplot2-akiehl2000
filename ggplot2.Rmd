@@ -31,18 +31,6 @@ data <- read.csv('players.csv') %>%
 head(data)
 ```
 
-## Exploratory Data Analysis
-
-```{r, message=FALSE}
-# examine characteristics of data
-ExpData(data)
-
-# explore structure of data
-data %>%
-  select(-c(Player, Age, Team, Pos, GP, TOI, PS)) %>%
-  ggpairs(progress = FALSE)
-```
-
 ## Player Ages Between Teams
 
 ```{r, message=FALSE}
@@ -78,84 +66,8 @@ plt1 <- data %>%
        x = 'Player Age [Years]',
        y = 'Season Points (PTS) = Goals + Assists'); plt1
 
+# export plot as .pdf file
 pdf('plot1.pdf', height = 4, width = 8)
 print(plt1)
-invisible(dev.off())
-```
-
-## Point Shares
-
-```{r, message=FALSE, warning=FALSE}
-plt2 <- ggplot(data = data,
-               # create aesthetic mapping
-               mapping = aes(x = S,
-                             y = PS,
-                             color = Pos,
-                             fill = Pos,
-                             group = Pos)) +
-  # add scatter plot
-  geom_point(aes(size = G),
-             alpha = .25) +
-  # add trend lines
-  geom_smooth(method = 'loess', alpha = .1) +
-  # format y axis
-  scale_y_continuous(breaks = seq(-2, 16, 2)) +
-  # change plot theme
-  theme_tufte(base_size = 11, base_family = 'sans') +
-  # change legend titles
-  guides(size = guide_legend(title = 'Goals'),
-         fill = guide_legend(title = 'Position'),
-         color = guide_legend(title = 'Position')) +
-  # move legend to bottom of plot
-  theme(legend.position = 'bottom',
-        # change color of plot background
-        panel.background = element_rect(fill = 'mintcream',
-                                        color = 'mintcream')) +
-  # change color palette for scatter plot and trend lines
-  scale_color_viridis(discrete = TRUE, option = 'C') +
-  scale_fill_viridis(discrete = TRUE, option = 'C') + 
-  # add plot and axis titles
-  labs(title = 'Contributions of Shots and Goals to Point Shares',
-       subtitle = 'NHL 2021-22 season statistics',
-       x = 'Shots on Goal (S)',
-       y = 'Point Shares (PS)'); plt2
-
-pdf('plot2.pdf', height = 4, width = 8)
-print(plt2)
-invisible(dev.off())
-```
-
-# Average Time on Ice
-
-```{r}
-plt3 <- data %>%
-  merge((data %>%
-           group_by(Age) %>%
-           summarize(n = n())),
-        by.x = 'Age',
-        by.y = 'Age',
-        all.x = TRUE) %>%
-  # filter for age groups with >1 player
-  filter(n > 1) %>%
-  select(-n) %>%
-  group_by(Age, Pos) %>%
-  # create aesthetic mapping
-  ggplot(mapping = aes(x = ATOI)) +
-  # add density plots
-  geom_density() +
-  # plot separately by age
-  facet_wrap(. ~ Age) +
-  # remove breaks on y axis
-  scale_y_continuous(breaks = c()) +
-  # change plot theme
-  theme_tufte(base_size = 11, base_family = 'sans') +
-  # add plot and axis titles
-  labs(title = 'Distribution of Average Time on Ice by Age',
-       subtitle = 'NHL 2021-22 season statistics',
-       x = 'Average Time on Ice (ATOI) [Minutes]', 
-       y = 'Density'); plt3
-
-pdf('plot3.pdf', height = 4, width = 8)
-print(plt3)
 invisible(dev.off())
 ```
