@@ -1,0 +1,73 @@
+---
+title: "ggplot2 Assignment"
+author: "Adam Kiehl"
+date: "2022-09-14"
+output: html_document
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse) # ggplot2 and dplyr
+library(GGally) # ggpairs
+library(SmartEDA) # ExpData
+library(ggthemes) # theme_tufte
+library(viridis) # color palette
+```
+
+## Data
+
+```{r}
+# read in the data from a .csv file
+data <- read.csv('players.csv') %>%
+  # calculate average time on ice
+  mutate(ATOI = round(TOI / GP, 3)) %>%
+  # convert position to a factor
+  mutate(Pos = as.factor(Pos)) %>%
+  # remove empty rows
+  filter(Player != '') %>%
+  # remove non-standard positions
+  filter(!(Pos %in% c('F', 'W', 'G')))
+
+head(data)
+```
+
+## Player Ages Between Teams
+
+```{r, message=FALSE}
+plt1 <- data %>%
+  # remove players without an identified team
+  filter(Team != 'TOT') %>%
+  # remove players with <10 games
+  filter(GP > 10) %>%
+  # create aesthetic mapping
+  ggplot(mapping = aes(x = Age,
+                       y = PTS,
+                       color = PlusMin)) +
+  # add scatter plot
+  geom_point(alpha = .3, size = 1) +
+  # add trend lines
+  geom_smooth(method = 'loess', alpha = .05, size = .2, col = 'red4') +
+  # plot separately by team
+  facet_wrap(. ~ Team, shrink = FALSE) +
+  # format axes
+  scale_x_continuous(breaks = seq(20, 40, 10)) +
+  scale_y_continuous(breaks = seq(0, 100, 50),
+                     limits = c(-3, max(data$PTS))) +
+  # change legend format and title
+  scale_color_continuous(breaks = seq(-50, 50, 25)) +
+  guides(color = guide_colorbar(title = '+/-')) +
+  # change plot theme
+  theme_tufte(base_size = 10, base_family = 'sans') +
+  # change color palette
+  scale_color_viridis() +
+  # add plot and axis titles
+  labs(title = 'Where Do Hockey Teams\' Points Come From?',
+       subtitle = 'NHL 2021-22 season statistics (>10 games)',
+       x = 'Player Age [Years]',
+       y = 'Season Points (PTS) = Goals + Assists'); plt1
+
+# export plot as .pdf file
+pdf('plot1.pdf', height = 4, width = 8)
+print(plt1)
+invisible(dev.off())
+```
